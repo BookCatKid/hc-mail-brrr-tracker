@@ -2,41 +2,51 @@ name: Mail Notifier
 
 on:
   schedule:
-    - cron: "*/15 * * * *"
+    - cron: "*/15 * * * *" # every 15 minutes
   workflow_dispatch:
+
+concurrency:
+  group: mail-notifier
+  cancel-in-progress: true
 
 jobs:
   run-check:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Checkout repo
+      # 1. Checkout repo
+      - name: Checkout
         uses: actions/checkout@v4
 
+      # 2. Setup Node
       - name: Setup Node
         uses: actions/setup-node@v4
         with:
           node-version: 20
 
-      - name: Install deps
+      # 3. Install deps
+      - name: Install dependencies
         run: npm install node-fetch
 
-      # 🧠 Restore cached state
+      # 4. Restore cached state
       - name: Restore state cache
         uses: actions/cache@v4
         with:
           path: state.json
-          key: mail-state
+          key: mail-state-v1
+          restore-keys: |
+            mail-state-
 
-      - name: Run script
+      # 5. Run notifier script
+      - name: Run mail checker
         env:
           MAIL_TOKEN: ${{ secrets.MAIL_TOKEN }}
           BRRR_WEBHOOK: ${{ secrets.BRRR_WEBHOOK }}
         run: node index.js
 
-      # 💾 Save updated state back to cache
+      # 6. Save updated state back to cache
       - name: Save state cache
         uses: actions/cache@v4
         with:
           path: state.json
-          key: mail-state
+          key: mail-state-v1
