@@ -2,7 +2,7 @@ name: Mail Notifier
 
 on:
   schedule:
-    - cron: "*/15 * * * *" # every 15 minutes
+    - cron: "*/15 * * * *"
   workflow_dispatch:
 
 concurrency:
@@ -28,25 +28,33 @@ jobs:
       - name: Install dependencies
         run: npm install node-fetch
 
-      # 4. Restore cached state
+      # 4. Restore latest state (prefix match)
       - name: Restore state cache
-        uses: actions/cache@v4
+        id: cache-restore
+        uses: actions/cache/restore@v4
         with:
           path: state.json
-          key: mail-state-v1
+          key: mail-state-latest
           restore-keys: |
             mail-state-
 
-      # 5. Run notifier script
+      # 5. Ensure file exists (important)
+      - name: Initialize state if missing
+        run: |
+          if [ ! -f state.json ]; then
+            echo "{}" > state.json
+          fi
+
+      # 6. Run notifier script
       - name: Run mail checker
         env:
           MAIL_TOKEN: ${{ secrets.MAIL_TOKEN }}
           BRRR_WEBHOOK: ${{ secrets.BRRR_WEBHOOK }}
         run: node index.js
 
-      # 6. Save updated state back to cache
+      # 7. Save updated state (NEW key every run)
       - name: Save state cache
-        uses: actions/cache@v4
+        uses: actions/cache/save@v4
         with:
           path: state.json
-          key: mail-state-v1
+          key: mail-state-${{ github.run_id }}
