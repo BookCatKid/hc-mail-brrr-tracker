@@ -16,13 +16,13 @@ jobs:
     steps:
       # 1. Checkout repo
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
 
       # 2. Setup Node
       - name: Setup Node
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@v6
         with:
-          node-version: 20
+          node-version: 24
 
       # 3. Install deps
       - name: Install dependencies
@@ -31,7 +31,7 @@ jobs:
       # 4. Restore latest state (prefix match)
       - name: Restore state cache
         id: cache-restore
-        uses: actions/cache/restore@v4
+        uses: actions/cache/restore@v5
         with:
           path: state.json
           key: mail-state-latest
@@ -54,7 +54,7 @@ jobs:
 
       # 7. Save updated state (NEW key every run)
       - name: Save state cache
-        uses: actions/cache/save@v4
+        uses: actions/cache/save@v5
         with:
           path: state.json
           key: mail-state-${{ github.run_id }}
