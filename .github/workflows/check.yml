@@ -2,8 +2,8 @@ name: Mail Notifier
 
 on:
   schedule:
-    - cron: "*/15 * * * *"  # every 15 minutes
-  workflow_dispatch:  # manual run button
+    - cron: "*/15 * * * *"
+  workflow_dispatch:
 
 jobs:
   run-check:
@@ -21,8 +21,22 @@ jobs:
       - name: Install deps
         run: npm install node-fetch
 
+      # 🧠 Restore cached state
+      - name: Restore state cache
+        uses: actions/cache@v4
+        with:
+          path: state.json
+          key: mail-state
+
       - name: Run script
         env:
           MAIL_TOKEN: ${{ secrets.MAIL_TOKEN }}
           BRRR_WEBHOOK: ${{ secrets.BRRR_WEBHOOK }}
         run: node index.js
+
+      # 💾 Save updated state back to cache
+      - name: Save state cache
+        uses: actions/cache@v4
+        with:
+          path: state.json
+          key: mail-state
